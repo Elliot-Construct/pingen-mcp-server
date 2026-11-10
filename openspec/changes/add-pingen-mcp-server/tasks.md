@@ -35,4 +35,4 @@
 ## 6. Closeout
 
 - [x] 6.1 Full suite green (129 passed, exit 0), `openspec change validate add-pingen-mcp-server --json` -> valid:true errors:0 warnings:0 exit 0
-- [ ] 6.2 Commit and push to `main`; post plan + evidence on registry card PINGEN-01
+- [x] 6.2 Commit and push to `main` (chain 939ac0b -> 0fee3b8 -> ab97475 -> c31c7d4 -> closeout tick, remote verified each time); plan, progress, four criterion sign-offs and closer readiness posted on PINGEN-01
