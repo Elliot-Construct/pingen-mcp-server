@@ -61,11 +61,11 @@
 - [x] 6.4 c4: routes.yml carries the router with the auth chain, cert names the
       new host, host in DDNS targets, `docker restart traefik` leaves the route
       serving
-- [ ] 6.5 Evidence (before/after command output) posted to PINGEN-02 comments
+- [x] 6.5 Evidence (before/after command output) posted to PINGEN-02 comments
 
 ## 7. Closeout
 
 - [x] 7.1 README deployment section (consumer config: URL, client credentials
       location, fixed redirect port)
-- [ ] 7.2 `openspec validate --all --json` green; commit + push; card updated
+- [x] 7.2 `openspec validate --all --json` green; commit + push; card updated
       (criterion status left to Arthur for c2's amended wording)

@@ -1,5 +1,31 @@
 # Design — deploy-pingen-mcp-http
 
+## Amendment A1 — IdP provisioning proceeded on the Keycloak reading
+
+Added 2026-11-10 18:2x BST, after delivery. The Context section below records
+that Authentik was retired mid-task and that an `input_required` ask was placed
+on the card for Arthur to amend c2; it also says IdP client provisioning would
+wait for that amendment. **Provisioning did not wait**, and this block records
+why rather than editing the original text.
+
+- What changed: the pre-registered client (D1/D4/D5) was created against
+  **Keycloak realm master** — `provision_idp_client.py`, client
+  `pingen-mcp`, audience mapper set to the canonical resource URL — and the
+  whole c1–c4 verification was measured against it.
+- Why: Keycloak was, and remains, the only identity layer running on the box
+  (`docker ps`: no `authentik-*` containers; `auth.datawyse.ai` serves Keycloak
+  26.5.0). c2/c3 cannot be satisfied at all without a live client, so waiting
+  delivered nothing while leaving the substantive criteria untested. The action
+  is additive and reversible (delete the client).
+- What it does NOT settle: c2's **wording** still names Authentik. The card ask
+  stays open for Arthur — (a) amend card + c2 to "estate identity layer
+  (Keycloak realm master)", or (b) instruct a return to Authentik, which is a
+  config-only re-point of issuer/JWKS/audience plus a re-run of the harness.
+  Design decision A (pre-registered client, no DCR surface) does not move under
+  either ruling.
+- Superseded decisions: none. D1–D8 are unchanged; only the identity layer named
+  in D1's examples differs from the Authentik-era wording.
+
 ## Context
 
 - **Introducing change:** `add-pingen-mcp-server` (PINGEN-01), commits
