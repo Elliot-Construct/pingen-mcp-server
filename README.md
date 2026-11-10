@@ -117,6 +117,92 @@ provider.exchange_code(
 
 Subsequent tool calls refresh transparently with `grant_type=refresh_token`. **Pingen revokes the used refresh token on every use** — the server persists the rotated token before the next request. Tokens are stored at `PINGEN_TOKEN_FILE` (outside the repository); secrets are never committed, logged or printed.
 
+## Public deployment (streamable HTTP)
+
+Without HTTP configuration the entry point runs **stdio** exactly as above. Set
+`PINGEN_MCP_PUBLIC_URL` and it instead serves **streamable HTTP** on
+`PINGEN_MCP_PORT`, gated by resource-server authentication:
+
+| Variable | Required in HTTP mode | Meaning |
+| --- | --- | --- |
+| `PINGEN_MCP_PUBLIC_URL` | yes | Canonical resource URL, e.g. `https://pingen-mcp.datawyse.ai/mcp` |
+| `PINGEN_MCP_AUTH_ISSUER` | yes | Expected JWT `iss` (the identity layer's realm issuer) |
+| `PINGEN_MCP_AUTH_JWKS_URI` | yes | Where signing keys are fetched from |
+| `PINGEN_MCP_AUTH_AUDIENCE` | yes | Expected JWT `aud` — normally the same as `PINGEN_MCP_PUBLIC_URL` |
+| `PINGEN_MCP_PORT` | no (8747) | Listen port |
+| `PINGEN_MCP_BIND` | no (127.0.0.1) | Bind address; containers use `0.0.0.0` |
+
+HTTP mode is **all or nothing**: a partial set of these variables fails at
+startup with an error naming the missing ones, rather than silently serving an
+unauthenticated endpoint.
+
+**Behaviour when deployed.** Unauthenticated requests get `401` with
+`WWW-Authenticate: Bearer resource_metadata="…"` pointing at the RFC 9728
+document served at `/.well-known/oauth-protected-resource/<path>`, which in
+turn names the authorization server. Tokens are validated against the identity
+layer's JWKS for signature, issuer, expiry **and audience** — a validly signed
+token minted for a different audience is rejected. Any `Host` other than the
+configured public hostname is refused with `421` before authentication runs.
+
+### Behind a reverse proxy
+
+Point a `Host()` router at the container/process and give it its own
+certificate. Do **not** put a `basicAuth`/`forwardAuth` middleware in front of
+it: those consume the `Authorization` header the MCP client sends, and the
+discovery paths must stay reachable anonymously. Authentication belongs to this
+server. The container publishes no port at all, so the proxy is the only path
+in.
+
+### Provisioning a consumer client
+
+The authorization server must be given a client before any consumer can obtain
+a token. Create a **confidential** OpenID Connect client with:
+
+- standard flow enabled, `S256` PKCE (authorization code + refresh token)
+- service accounts enabled if the consumer is headless (client credentials)
+- an **audience** protocol mapper whose value equals `PINGEN_MCP_PUBLIC_URL`,
+  otherwise the resource server rejects every token on `aud`
+- the consumer's exact redirect URI(s). Redirect URIs are matched exactly, so
+  interactive consumers must use the registered port — this deployment
+  registers `http://127.0.0.1:8747/callback` and `http://localhost:8747/callback`
+
+Store the resulting client id and secret outside the repository. An idempotent
+example script for Keycloak lives beside the deployment, not in this repo
+(`C:/ProgramData/pingen-mcp/provision_idp_client.py`), because it reads that
+stack's admin credentials.
+
+### Consumer configuration
+
+```json
+{
+  "mcpServers": {
+    "pingen": {
+      "url": "https://pingen-mcp.datawyse.ai/mcp",
+      "authorization": {
+        "client_id": "<from your IdP client>",
+        "token_endpoint": "<identity layer token endpoint>"
+      }
+    }
+  }
+}
+```
+
+Clients that support OAuth discovery need no manual wiring: the `401`
+challenge → RFC 9728 metadata → RFC 8414 authorization-server metadata chain
+leads to the token endpoint automatically.
+
+### Verifying a deployment
+
+```bash
+python scripts/verify_public_deploy.py           # c1–c4, restarts Traefik
+python scripts/verify_public_deploy.py --json    # machine-readable
+python scripts/verify_public_deploy.py --skip-restart
+```
+
+Exit code 0 only when every executed check passed; a check that could not run
+(for example, missing consumer credentials) reports `skip` and does **not**
+count as a pass.
+
 ## Tools
 
 Naming rule: the spec's `operationId` with `.`/`-` replaced by `_` (e.g. `letters.create` → `letters_create`). Every tool mirrors exactly one documented operation — the test suite re-derives the expected list from `reference/openapi.json` and fails on any drift.
