@@ -1,0 +1,30 @@
+[project]
+name = "pingen-mcp-server"
+version = "0.1.0"
+description = "Open-source MCP server for the Pingen API (programmable physical mail, email and eBill dispatch)"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=2.10",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+pingen-mcp-server = "pingen_mcp_server.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pingen_mcp_server"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
