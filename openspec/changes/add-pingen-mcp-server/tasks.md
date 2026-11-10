@@ -30,9 +30,9 @@
 
 - [x] 5.1 README — install, configuration table, both grant flows, tool inventory, staging smoke instructions (satisfies criterion c4 doc half)
 - [x] 5.2 `scripts/staging_smoke.py` — opt-in live smoke (staging by default; production needs an explicit flag). Staging credentials are not yet provisioned (401 invalid_client: the provided env file holds production credentials), so the live run was executed against PRODUCTION read-only under Arthur's option-B ruling: 7/7 steps HTTP 200 (user, organisations, associations, letters collection, batches collection), zero writes, probe token deleted immediately. Staging run pending Elliot's staging credentials; disclosed on the card (c3 live half)
-- [ ] 5.3 Fresh-clone check — install from README on a clean checkout, start server, list tools (satisfies criterion c4)
+- [x] 5.3 Fresh-clone check — fresh clone of remote main (ab97475) into scratch: venv + `pip install -e .[dev]`, README one-liner -> 49 tools, console script present, real MCP stdio handshake (initialize -> tools/list) -> 49 tools, fresh-clone pytest -> 129 passed (satisfies criterion c4)
 
 ## 6. Closeout
 
-- [ ] 6.1 Full suite green (`pytest -q`), `openspec change validate add-pingen-mcp-server --json` passes
+- [x] 6.1 Full suite green (129 passed, exit 0), `openspec change validate add-pingen-mcp-server --json` -> valid:true errors:0 warnings:0 exit 0
 - [ ] 6.2 Commit and push to `main`; post plan + evidence on registry card PINGEN-01
