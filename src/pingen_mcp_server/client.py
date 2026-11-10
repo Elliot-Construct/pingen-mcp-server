@@ -134,8 +134,10 @@ class PingenClient:
     def patch(self, path: str, json_body: Any = None) -> Any:
         return self.request("PATCH", path, json_body=json_body)
 
-    def delete(self, path: str) -> Any:
-        return self.request("DELETE", path)
+    def delete(self, path: str, json_body: Any = None) -> Any:
+        # DELETE with a body is unusual but the spec requires it for
+        # DELETE /organisations/{organisationId}/batches/{batchId}.
+        return self.request("DELETE", path, json_body=json_body)
 
     def collection(
         self,

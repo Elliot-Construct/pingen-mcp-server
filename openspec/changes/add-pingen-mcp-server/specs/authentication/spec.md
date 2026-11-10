@@ -23,21 +23,21 @@ The server SHALL obtain machine access tokens by POSTing `grant_type=client_cred
 
 ### Requirement: Authorization-code grant
 
-The server SHALL support delegated access via the authorization-code grant: an `auth_authorize_url` tool SHALL build `{identity_base_url}/auth/authorize` with `response_type=code`, a random `state`, a 43-character `code_verifier`, `client_id`, `redirect_uri` and optional `scope`; an `auth_exchange_code` tool SHALL POST `grant_type=authorization_code` with `client_id`, `client_secret`, `redirect_uri`, `code` and `code_verifier` to `/auth/access-tokens` and store the returned `access_token` and `refresh_token`.
+The server SHALL support delegated access via the authorization-code grant through the auth module's Python API (not MCP tools, since completing the browser redirect is an operator action): `build_authorize_url` SHALL build `{identity_base_url}/auth/authorize` with `response_type=code`, a random `state`, a 43-character `code_verifier`, `client_id`, `redirect_uri` and optional `scope`; `exchange_code` SHALL POST `grant_type=authorization_code` with `client_id`, `client_secret`, `redirect_uri`, `code` and `code_verifier` to `/auth/access-tokens` and store the returned `access_token` and `refresh_token`.
 
 #### Scenario: authorize URL built
 
-- **WHEN** a user requests the authorization URL
+- **WHEN** an operator runs the authorize-URL builder with a generated state and code_verifier
 - **THEN** the returned URL targets the configured identity host and carries `response_type=code`, `state`, `code_challenge`, `client_id` and `redirect_uri`
 
 #### Scenario: state verified on exchange
 
-- **WHEN** the exchange tool is invoked with a `state` that does not match the value generated for the authorize URL
+- **WHEN** the code exchange is invoked with a `state` that does not match the value generated for the authorize URL
 - **THEN** the exchange is refused with an error naming the state mismatch, and no token request is sent
 
 #### Scenario: code exchanged for tokens
 
-- **WHEN** the exchange tool is invoked with the valid `code` and `code_verifier`
+- **WHEN** the code exchange is invoked with the valid `code` and `code_verifier`
 - **THEN** the server POSTs the form-encoded `authorization_code` grant and persists the returned `access_token` and `refresh_token`
 
 ### Requirement: Refresh-token rotation

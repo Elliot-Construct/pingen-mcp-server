@@ -61,6 +61,10 @@ def register_domain(mcp: FastMCP, tools: dict, get_client_fn=get_client) -> None
 
 
 def build_server(get_client_fn=get_client) -> FastMCP:
+    # Validate configuration eagerly so a bad PINGEN_* value fails at server
+    # startup (import/entry point), not on the first tool call. Credentials
+    # presence is NOT required here - listing tools must work without them.
+    load_config()
     mcp = FastMCP(
         "Pingen",
         instructions=(
